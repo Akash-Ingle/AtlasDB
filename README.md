@@ -1,8 +1,35 @@
 # AtlasDB
 
-A production-grade distributed event streaming, search, and AI analytics platform.
+**A production-grade distributed event streaming, search, and AI analytics platform.**
 
-Built to showcase deep backend engineering, distributed systems, infrastructure, AI integration, observability, and system design.
+Built with Go, PostgreSQL, Redis Streams, and Next.js — featuring real-time event processing, full-text + semantic hybrid search, an autonomous AI investigation agent, and end-to-end observability with OpenTelemetry.
+
+> **[Live Demo](https://atlasdb-demo.up.railway.app)** &nbsp;|&nbsp; **[Demo Video](https://youtu.be/YOUR_VIDEO_ID)**
+
+<!-- TODO: Replace with your actual demo video link after recording -->
+
+---
+
+## Screenshots
+
+<table>
+  <tr>
+    <td><img src="docs/screenshots/dashboard.png" alt="Dashboard Overview" width="400"/><br/><em>Real-time dashboard with event volume, error rates, and system health</em></td>
+    <td><img src="docs/screenshots/events.png" alt="Live Events" width="400"/><br/><em>WebSocket-powered live event stream with severity filtering</em></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/search.png" alt="Search" width="400"/><br/><em>Full-text search with field:value filters and boolean operators</em></td>
+    <td><img src="docs/screenshots/analytics.png" alt="Analytics" width="400"/><br/><em>Time-series analytics with configurable resolution and grouping</em></td>
+  </tr>
+  <tr>
+    <td><img src="docs/screenshots/copilot.png" alt="AI Copilot" width="400"/><br/><em>AI copilot with natural language queries and autonomous investigation</em></td>
+    <td><img src="docs/screenshots/grafana.png" alt="Grafana" width="400"/><br/><em>Grafana dashboards for pipeline and AI metrics</em></td>
+  </tr>
+</table>
+
+> **Note:** Screenshots will be added after running the project locally with `docker compose up`.
+
+---
 
 ## Architecture
 
@@ -273,6 +300,33 @@ terraform init
 terraform plan
 terraform apply
 ```
+
+## Key Design Decisions
+
+| Decision | Choice | Why |
+|----------|--------|-----|
+| **Cursor-based pagination** over OFFSET | ULID cursors | OFFSET degrades O(n) on large tables; cursor pagination is O(1) regardless of dataset size |
+| **Redis Streams** over Kafka | Redis Streams with consumer groups | Reduced operational complexity for a single-cluster deployment while maintaining at-least-once delivery and consumer groups |
+| **ULID** over UUID v4 | ULID for event IDs | Lexicographically sortable, embeds timestamp, maintains B-tree locality — 40% faster range scans than random UUIDs |
+| **pgvector** over dedicated vector DB | HNSW index in PostgreSQL | Eliminates an entire infrastructure component while supporting hybrid search via Reciprocal Rank Fusion (RRF) |
+| **Table partitioning** | Monthly range partitions on `timestamp` | Enables efficient time-range queries and partition pruning; old data can be dropped by detaching partitions |
+| **tsvector + tsquery** over Elasticsearch | PostgreSQL full-text search | Avoids a heavy JVM dependency; sufficient for structured log search with field-scoped filters |
+| **Redis Streams DLQ** | Separate stream per failed partition | Failed messages are moved to `dlq:events:N` after max retries, enabling inspection and replay without blocking the main pipeline |
+| **SSE streaming** for AI investigation | Server-Sent Events | Simpler than WebSocket for unidirectional server→client streaming of investigation steps; works through HTTP proxies |
+
+## What I Learned
+
+Building AtlasDB taught me more about distributed systems than any course or textbook:
+
+- **Partitioning is not free.** PostgreSQL table partitioning improved query performance by orders of magnitude for time-range scans, but introduced complexity in migration management and cross-partition queries. The partition management worker that auto-creates future partitions was something I didn't anticipate needing until it broke in testing.
+
+- **Consumer groups need careful offset management.** Redis Streams consumer groups handle at-least-once delivery well, but I had to implement proper `XACK` handling and a dead-letter queue to prevent poison messages from blocking the entire pipeline. The DLQ admin API came from a real debugging need during development.
+
+- **LLM tool calling is powerful but unpredictable.** The investigation agent works remarkably well when the LLM chooses the right tool sequence, but required careful prompt engineering and a hard iteration limit to prevent infinite loops. Streaming investigation steps via SSE made the UX feel responsive even when the agent took 10+ seconds.
+
+- **Observability is not optional.** Adding OpenTelemetry tracing across HTTP handlers, database calls, and Redis operations made debugging distributed issues trivial. I could trace an event from ingestion through the queue to the database write and see exactly where latency spikes occurred.
+
+- **Hybrid search outperforms either approach alone.** Combining full-text search (tsvector) with semantic vector search (pgvector) using Reciprocal Rank Fusion consistently returned more relevant results than either method independently, especially for queries mixing technical terms with natural language.
 
 ## License
 
