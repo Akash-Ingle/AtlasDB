@@ -1,0 +1,56 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base
+
+namespace: atlasdb-dev
+
+patches:
+  - target:
+      kind: Deployment
+      name: api-server
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: Deployment
+      name: processor
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: Deployment
+      name: dashboard
+    patch: |
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: api-server
+    patch: |
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2
+  - target:
+      kind: HorizontalPodAutoscaler
+      name: processor
+    patch: |
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2
+
+configMapGenerator:
+  - name: atlas-config
+    behavior: merge
+    literals:
+      - LOG_LEVEL=debug

@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dashboard
+  namespace: atlasdb
+  labels:
+    app: dashboard
+    app.kubernetes.io/name: dashboard
+    app.kubernetes.io/part-of: atlasdb
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: dashboard
+  template:
+    metadata:
+      labels:
+        app: dashboard
+    spec:
+      containers:
+        - name: dashboard
+          image: atlasdb/dashboard:latest
+          ports:
+            - containerPort: 3000
+              name: http
+          env:
+            - name: NEXT_PUBLIC_API_URL
+              value: "http://api-server:8080"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 64Mi
+            limits:
+              cpu: 200m
+              memory: 256Mi
+          livenessProbe:
+            httpGet:
+              path: /
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 15

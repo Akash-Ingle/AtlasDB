@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: worker
+  namespace: atlasdb
+  labels:
+    app: worker
+    app.kubernetes.io/name: worker
+    app.kubernetes.io/part-of: atlasdb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: worker
+  template:
+    metadata:
+      labels:
+        app: worker
+    spec:
+      containers:
+        - name: worker
+          image: atlasdb/worker:latest
+          envFrom:
+            - configMapRef:
+                name: atlas-config
+            - secretRef:
+                name: atlas-secrets
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 500m
+              memory: 256Mi

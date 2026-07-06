@@ -1,0 +1,49 @@
+# Binaries
+bin/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test
+coverage.out
+coverage.html
+*.test
+
+# Environment
+.env
+.env.local
+.env.production
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Go
+vendor/
+
+# Node (frontend)
+frontend/node_modules/
+frontend/.next/
+frontend/out/
+
+# Docker
+*.log
+
+# Terraform
+terraform/.terraform/
+terraform/*.tfstate
+terraform/*.tfstate.backup
+terraform/*.tfplan
+
+# Secrets
+*.pem
+*.key
+credentials.json

@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: atlas-config
+  namespace: atlasdb
+data:
+  SERVER_HOST: "0.0.0.0"
+  SERVER_PORT: "8080"
+  POSTGRES_HOST: "postgres"
+  POSTGRES_PORT: "5432"
+  POSTGRES_DB: "atlasdb"
+  POSTGRES_SSLMODE: "disable"
+  REDIS_ADDR: "redis:6379"
+  LOG_LEVEL: "info"
+  LOG_FORMAT: "json"
+  INGEST_NUM_PARTITIONS: "4"
+  PROCESSOR_WORKERS: "4"
+  PROCESSOR_BATCH_SIZE: "100"
+  OTEL_ENABLED: "true"
+  OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector:4317"
+  AI_ENABLED: "false"

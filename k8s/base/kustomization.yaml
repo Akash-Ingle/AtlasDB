@@ -1,0 +1,26 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: atlasdb
+
+resources:
+  - namespace.yaml
+  - configmap.yaml
+  - secrets.yaml
+  - api-server/deployment.yaml
+  - api-server/service.yaml
+  - api-server/hpa.yaml
+  - api-server/pdb.yaml
+  - processor/deployment.yaml
+  - processor/hpa.yaml
+  - worker/deployment.yaml
+  - dashboard/deployment.yaml
+  - dashboard/service.yaml
+  - postgres/statefulset.yaml
+  - postgres/service.yaml
+  - redis/deployment.yaml
+  - redis/service.yaml
+  - ingress.yaml
+
+commonLabels:
+  app.kubernetes.io/part-of: atlasdb

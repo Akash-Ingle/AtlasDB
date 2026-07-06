@@ -1,0 +1,171 @@
+services:
+  # ── Core Infrastructure ──────────────────────────────────────────
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: atlas
+      POSTGRES_DB: atlasdb
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U atlas -d atlasdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redisdata:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  # ── Application Services ─────────────────────────────────────────
+  api-server:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.api-server
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_HOST: "0.0.0.0"
+      SERVER_PORT: "8080"
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: atlas
+      POSTGRES_DB: atlasdb
+      POSTGRES_SSLMODE: disable
+      REDIS_ADDR: "redis:6379"
+      JWT_SECRET: "atlas-dev-secret-do-not-use-in-production"
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+      INGEST_NUM_PARTITIONS: "4"
+      OTEL_ENABLED: "true"
+      OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector:4317"
+      AI_ENABLED: "${AI_ENABLED:-false}"
+      AI_PROVIDER: "${AI_PROVIDER:-openai}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      ANTHROPIC_API_KEY: "${ANTHROPIC_API_KEY:-}"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "/bin/api-server", "--version || true"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+      start_period: 10s
+
+  processor:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.processor
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: atlas
+      POSTGRES_DB: atlasdb
+      POSTGRES_SSLMODE: disable
+      REDIS_ADDR: "redis:6379"
+      PROCESSOR_WORKERS: "4"
+      PROCESSOR_BATCH_SIZE: "100"
+      INGEST_NUM_PARTITIONS: "4"
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  worker:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.worker
+    environment:
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: "5432"
+      POSTGRES_USER: atlas
+      POSTGRES_PASSWORD: atlas
+      POSTGRES_DB: atlasdb
+      POSTGRES_SSLMODE: disable
+      LOG_LEVEL: info
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  # ── Frontend ─────────────────────────────────────────────────────
+  dashboard:
+    build:
+      context: .
+      dockerfile: deploy/docker/Dockerfile.frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:8080"
+    depends_on:
+      - api-server
+
+  # ── Observability ────────────────────────────────────────────────
+  otel-collector:
+    image: otel/opentelemetry-collector-contrib:0.115.1
+    volumes:
+      - ./monitoring/otel-collector/config.yaml:/etc/otelcol/config.yaml
+    command: ["--config", "/etc/otelcol/config.yaml"]
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+    depends_on:
+      - jaeger
+
+  jaeger:
+    image: jaegertracing/all-in-one:1.64
+    environment:
+      COLLECTOR_OTLP_ENABLED: "true"
+    ports:
+      - "16686:16686"
+      - "14268:14268"
+
+  prometheus:
+    image: prom/prometheus:v3.4.2
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - promdata:/prometheus
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.retention.time=7d"
+
+  grafana:
+    image: grafana/grafana:11.6.0
+    ports:
+      - "3001:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Viewer
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+      - ./monitoring/grafana/dashboards:/var/lib/grafana/dashboards
+      - grafanadata:/var/lib/grafana
+
+volumes:
+  pgdata:
+  redisdata:
+  promdata:
+  grafanadata:

@@ -1,0 +1,100 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "panels": [
+    {
+      "title": "AI Request Rate",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "targets": [
+        {
+          "expr": "rate(atlas_ai_requests_total[5m])",
+          "legendFormat": "{{type}}",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "fillOpacity": 15, "lineWidth": 2 } }
+      }
+    },
+    {
+      "title": "AI Latency (p99)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.99, rate(atlas_ai_duration_seconds_bucket[5m]))",
+          "legendFormat": "p99",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.50, rate(atlas_ai_duration_seconds_bucket[5m]))",
+          "legendFormat": "p50",
+          "refId": "B"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "lineWidth": 2 } }
+      }
+    },
+    {
+      "title": "Tokens Used (total)",
+      "type": "stat",
+      "gridPos": { "h": 4, "w": 8, "x": 0, "y": 8 },
+      "targets": [
+        {
+          "expr": "increase(atlas_ai_tokens_used_total[1h])",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Confidence Distribution",
+      "type": "histogram",
+      "gridPos": { "h": 8, "w": 16, "x": 8, "y": 8 },
+      "targets": [
+        {
+          "expr": "rate(atlas_ai_confidence_score_bucket[15m])",
+          "legendFormat": "{{le}}",
+          "refId": "A"
+        }
+      ]
+    },
+    {
+      "title": "Search Queries/sec",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 16 },
+      "targets": [
+        {
+          "expr": "rate(atlas_search_queries_total[5m])",
+          "legendFormat": "searches/s",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "custom": { "fillOpacity": 15, "lineWidth": 2 } }
+      }
+    },
+    {
+      "title": "Search Latency (p95)",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 16 },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(atlas_search_duration_seconds_bucket[5m]))",
+          "legendFormat": "p95",
+          "refId": "A"
+        }
+      ],
+      "fieldConfig": {
+        "defaults": { "unit": "s", "custom": { "lineWidth": 2 } }
+      }
+    }
+  ],
+  "refresh": "10s",
+  "schemaVersion": 39,
+  "tags": ["atlasdb", "ai", "search"],
+  "time": { "from": "now-1h", "to": "now" },
+  "title": "AtlasDB - AI & Search",
+  "uid": "atlas-ai-search"
+}
