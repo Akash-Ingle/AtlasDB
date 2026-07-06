@@ -4,31 +4,6 @@
 
 Built with Go, PostgreSQL, Redis Streams, and Next.js — featuring real-time event processing, full-text + semantic hybrid search, an autonomous AI investigation agent, and end-to-end observability with OpenTelemetry.
 
-> **[Live Demo](https://atlasdb-demo.up.railway.app)** &nbsp;|&nbsp; **[Demo Video](https://youtu.be/YOUR_VIDEO_ID)**
-
-<!-- TODO: Replace with your actual demo video link after recording -->
-
----
-
-## Screenshots
-
-<table>
-  <tr>
-    <td><img src="docs/screenshots/dashboard.png" alt="Dashboard Overview" width="400"/><br/><em>Real-time dashboard with event volume, error rates, and system health</em></td>
-    <td><img src="docs/screenshots/events.png" alt="Live Events" width="400"/><br/><em>WebSocket-powered live event stream with severity filtering</em></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/search.png" alt="Search" width="400"/><br/><em>Full-text search with field:value filters and boolean operators</em></td>
-    <td><img src="docs/screenshots/analytics.png" alt="Analytics" width="400"/><br/><em>Time-series analytics with configurable resolution and grouping</em></td>
-  </tr>
-  <tr>
-    <td><img src="docs/screenshots/copilot.png" alt="AI Copilot" width="400"/><br/><em>AI copilot with natural language queries and autonomous investigation</em></td>
-    <td><img src="docs/screenshots/grafana.png" alt="Grafana" width="400"/><br/><em>Grafana dashboards for pipeline and AI metrics</em></td>
-  </tr>
-</table>
-
-> **Note:** Screenshots will be added after running the project locally with `docker compose up`.
-
 ---
 
 ## Architecture
