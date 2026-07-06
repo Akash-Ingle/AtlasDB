@@ -14,7 +14,20 @@ import (
 var migrationsFS embed.FS
 
 func RunMigrations(ctx context.Context, pool *pgxpool.Pool, logger zerolog.Logger) error {
-	_, err := pool.Exec(ctx, `
+	// Acquire an advisory lock so only one service runs migrations at a time
+	conn, err := pool.Acquire(ctx)
+	if err != nil {
+		return fmt.Errorf("acquire conn for migrations: %w", err)
+	}
+	defer conn.Release()
+
+	const lockID = 8675309 // arbitrary constant
+	if _, err := conn.Exec(ctx, "SELECT pg_advisory_lock($1)", lockID); err != nil {
+		return fmt.Errorf("acquire migration lock: %w", err)
+	}
+	defer conn.Exec(ctx, "SELECT pg_advisory_unlock($1)", lockID) //nolint:errcheck
+
+	_, err = conn.Exec(ctx, `
 		CREATE TABLE IF NOT EXISTS schema_migrations (
 			version TEXT PRIMARY KEY,
 			applied_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -37,7 +50,7 @@ func RunMigrations(ctx context.Context, pool *pgxpool.Pool, logger zerolog.Logge
 		name := entry.Name()
 
 		var applied bool
-		err := pool.QueryRow(ctx,
+		err := conn.QueryRow(ctx,
 			"SELECT EXISTS(SELECT 1 FROM schema_migrations WHERE version = $1)",
 			name,
 		).Scan(&applied)
@@ -55,7 +68,7 @@ func RunMigrations(ctx context.Context, pool *pgxpool.Pool, logger zerolog.Logge
 			return fmt.Errorf("read migration %s: %w", name, err)
 		}
 
-		tx, err := pool.Begin(ctx)
+		tx, err := conn.Begin(ctx)
 		if err != nil {
 			return fmt.Errorf("begin tx for %s: %w", name, err)
 		}

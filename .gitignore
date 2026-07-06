@@ -29,8 +29,8 @@ Thumbs.db
 # Go
 vendor/
 
-# Node (frontend)
-frontend/node_modules/
+# Node
+node_modules/
 frontend/.next/
 frontend/out/
 

@@ -6,6 +6,43 @@ Built with Go, PostgreSQL, Redis Streams, and Next.js — featuring real-time ev
 
 ---
 
+## Screenshots
+
+<p align="center">
+  <img src="docs/screenshots/dashboard.png" alt="Dashboard" width="45%"/>
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/events.png" alt="Events" width="45%"/>
+</p>
+<p align="center">
+  <em>Real-time overview dashboard</em>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <em>Live event stream with severity filtering</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/search.png" alt="Search" width="45%"/>
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/analytics.png" alt="Analytics" width="45%"/>
+</p>
+<p align="center">
+  <em>Full-text search with ranked results</em>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <em>Analytics with time-series and top-N charts</em>
+</p>
+
+<p align="center">
+  <img src="docs/screenshots/copilot.png" alt="AI Copilot" width="45%"/>
+  &nbsp;&nbsp;
+  <img src="docs/screenshots/grafana.png" alt="Grafana" width="45%"/>
+</p>
+<p align="center">
+  <em>AI copilot with natural language queries</em>
+  &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+  <em>Grafana pipeline monitoring dashboard</em>
+</p>
+
+---
+
 ## Architecture
 
 ```
